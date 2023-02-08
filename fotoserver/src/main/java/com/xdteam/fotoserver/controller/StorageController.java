@@ -16,8 +16,8 @@ public class StorageController {
     private StorageService storageService;
 
     @PostMapping("/file")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        String fileName = storageService.storeFile(file);
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("seriesId") String seriesId) {
+        String fileName = storageService.storeFile(file, seriesId);
 
         String fileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/file/").path(fileName).toUriString();
 

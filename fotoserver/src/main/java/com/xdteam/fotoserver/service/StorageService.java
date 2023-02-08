@@ -16,31 +16,44 @@ import java.nio.file.StandardCopyOption;
 @Service
 public class StorageService {
 
-    private final Path fileStoragePath;
+    private Path fileStoragePath;
+    private StorageProperties properties = new StorageProperties();
 
-    @Autowired StorageService(StorageProperties properties){
+    @Autowired
+    StorageService() {
         this.fileStoragePath = Paths.get(properties.getUploadDir()).toAbsolutePath().normalize();
 
-        try{
+        try {
             Files.createDirectories(this.fileStoragePath);
-        }catch (Exception e){
-            throw new StorageException("Could not create destination directory",e);
+        } catch (Exception e) {
+            throw new StorageException("Could not create destination directory", e);
         }
 
     }
 
-    public String storeFile(MultipartFile file){
+    private void updateStoragePath(String seriesId) {
+        this.fileStoragePath = Paths.get(properties.getUploadDir() + "/" + seriesId).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(this.fileStoragePath);
+        } catch (Exception e) {
+            throw new StorageException("Could not create destination directory", e);
+        }
+    }
+
+    public String storeFile(MultipartFile file, String seriesId) {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 
-        try{
-            if(fileName.contains("..")) {
+        updateStoragePath(seriesId);
+
+        try {
+            if (fileName.contains("..")) {
                 throw new StorageException("Filename contains invalid path sequence " + fileName);
             }
 
             Path targetLocation = this.fileStoragePath.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             return fileName;
-        }catch (IOException e){
+        } catch (IOException e) {
             throw new StorageException("", e);
         }
 
