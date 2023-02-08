@@ -8,5 +8,5 @@ import com.xdteam.fotofiesta.domain.model.Serie
 
 @Database(entities = [Image::class, Serie::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun serieDao(): SerieDao
+    abstract val serieDao: SerieDao
 }
