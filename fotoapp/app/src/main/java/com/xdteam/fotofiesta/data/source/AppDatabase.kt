@@ -1,9 +1,12 @@
 package com.xdteam.fotofiesta.data.source
 
 import androidx.room.Database
+import androidx.room.RoomDatabase
+import com.xdteam.fotofiesta.data.source.dao.SerieDao
 import com.xdteam.fotofiesta.domain.model.Image
 import com.xdteam.fotofiesta.domain.model.Serie
 
 @Database(entities = [Image::class, Serie::class], version = 1)
-class AppDatabase {
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun serieDao(): SerieDao
 }
