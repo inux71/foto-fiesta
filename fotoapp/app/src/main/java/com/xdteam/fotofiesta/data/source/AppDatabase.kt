@@ -9,4 +9,8 @@ import com.xdteam.fotofiesta.domain.model.Serie
 @Database(entities = [Image::class, Serie::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract val serieDao: SerieDao
+
+    companion object {
+        const val DATABASE_NAME = "app-database"
+    }
 }
