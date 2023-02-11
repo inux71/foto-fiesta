@@ -3,16 +3,20 @@ package com.xdteam.fotoserver.service;
 
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
+import com.xdteam.fotoserver.exception.MyFileNotFoundException;
 import com.xdteam.fotoserver.exception.StorageException;
 import com.xdteam.fotoserver.properties.StorageProperties;
 import org.apache.commons.io.FileUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -103,5 +107,20 @@ public class StorageService {
         HtmlConverter.convertToPdf(htmlContent, new FileOutputStream(newPdfFile), props);
 
         return newPdfFile.getName();
+    }
+
+
+    public Resource loadFileAsResource(String fileName) {
+        try {
+            Path filePath = this.fileStoragePath.resolve(fileName).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if(resource.exists()) {
+                return resource;
+            } else {
+                throw new MyFileNotFoundException("File not found " + fileName);
+            }
+        } catch (MalformedURLException ex) {
+            throw new MyFileNotFoundException("File not found " + fileName, ex);
+        }
     }
 }
