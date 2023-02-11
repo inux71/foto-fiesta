@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FotoFiesta</string>
+    <string name="delay_option_header">Delay</string>
+    <string name="serie_photo_size">Number of photos</string>
+    <string name="settings_page_header">Settings</string>
+    <string name="save_button">Save</string>
+</resources>
