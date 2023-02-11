@@ -9,18 +9,27 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 public class StorageController {
 
     @Autowired
     private StorageService storageService;
 
-    @PostMapping("/file")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("seriesId") String seriesId) {
+    @PostMapping("/oneFile")
+    public ResponseEntity<String> uploadOneFile(@RequestParam("file") MultipartFile file, @RequestParam("seriesId") String seriesId) {
         String fileName = storageService.storeFile(file, seriesId);
 
         String fileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/file/").path(fileName).toUriString();
 
         return ResponseEntity.ok().body(fileUri);
+    }
+
+    @PostMapping("/files")
+    public ResponseEntity<String> uploadFiles(@RequestParam("files") List<MultipartFile> files, @RequestParam("seriesId") String seriesId){
+        List<ResponseEntity<String>> uris = files.stream().map(file->uploadOneFile(file, seriesId)).toList();
+        return ResponseEntity.ok().body(uris.toString());
     }
 }
