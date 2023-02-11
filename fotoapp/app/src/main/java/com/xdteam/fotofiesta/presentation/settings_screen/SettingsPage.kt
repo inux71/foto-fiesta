@@ -30,12 +30,12 @@ fun SettingsPage() {
                 .padding(10.dp)
         ) {
             SettingsOption(
-                header = stringResource(R.string.delay_option_header),
-                placeholder = "1"
+                optionsList = (1..10).toList(),
+                label = stringResource(R.string.delay_option_header)
             )
             SettingsOption(
-                header = stringResource(R.string.serie_photo_size),
-                placeholder = "5"
+                optionsList = (2..5).toList(),
+                label = stringResource(R.string.serie_photo_size)
             )
 
             Spacer(modifier = Modifier.weight(1f))
