@@ -4,4 +4,5 @@
     <!-- Options Menu -->
     <string name="delay_option_header">Opóźnienie</string>
     <string name="serie_photo_size">Ilość zdjęć</string>
+    <string name="settings_page_header">Ustawienia</string>
 </resources>
