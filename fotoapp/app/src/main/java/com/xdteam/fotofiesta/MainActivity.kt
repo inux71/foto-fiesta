@@ -8,15 +8,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.xdteam.fotofiesta.presentation.SettingsPage
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.xdteam.fotofiesta.presentation.PreviewScreen
+import androidx.navigation.compose.rememberNavController
 import com.xdteam.fotofiesta.ui.theme.FotoFiestaTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -44,7 +42,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SettingsPage()
+                    val navController = rememberNavController()
+                    val snackbarHostState = remember { SnackbarHostState() }
+
+                    NavGraph(navHostController = navController, snackbarHostState = snackbarHostState)
                 }
             }
         }
