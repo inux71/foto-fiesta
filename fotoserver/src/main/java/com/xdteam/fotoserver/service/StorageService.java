@@ -1,6 +1,8 @@
 package com.xdteam.fotoserver.service;
 
 
+import com.itextpdf.html2pdf.ConverterProperties;
+import com.itextpdf.html2pdf.HtmlConverter;
 import com.xdteam.fotoserver.exception.StorageException;
 import com.xdteam.fotoserver.properties.StorageProperties;
 import org.apache.commons.io.FileUtils;
@@ -65,20 +67,30 @@ public class StorageService {
 
     public String storeMultipleFiles(List<MultipartFile> files, String seriesId) throws IOException {
         int i = 1;
+        String seriesResourcesPath =  properties.getUploadDir() + "/" + seriesId + "/";
 
         File htmlTemplateFile = new File("src/main/resources/static/template.html");
         String htmlString = FileUtils.readFileToString(htmlTemplateFile);
 
         for (MultipartFile file : files) {
-            String filename = storeOneFile(file, seriesId);
-            htmlString = htmlString.replace("$image" + i, filename);
+            String filePath = storeOneFile(file, seriesId);
+            htmlString = htmlString.replace("$image" + i, filePath);
             i++;
         }
         htmlString = htmlString.replace("$banner", "../banner.png");
 
-        String outputHtmlPath = properties.getUploadDir() + "/" + seriesId + "/" + seriesId + ".html";
+        String outputHtmlPath = seriesResourcesPath + seriesId + ".html";
         File newHtmlFile = new File(outputHtmlPath);
         FileUtils.writeStringToFile(newHtmlFile, htmlString);
+
+        /* PDF */
+
+        String outputPdfPath = seriesResourcesPath + seriesId + ".pdf";
+        File newPdfFile = new File(outputPdfPath);
+
+        ConverterProperties props = new ConverterProperties();
+        props.setBaseUri(seriesResourcesPath);
+        HtmlConverter.convertToPdf(htmlString, new FileOutputStream(newPdfFile), props);
 
 
         return "xd";
