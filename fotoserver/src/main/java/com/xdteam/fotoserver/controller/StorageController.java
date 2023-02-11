@@ -29,7 +29,8 @@ public class StorageController {
 
     @PostMapping("/files")
     public ResponseEntity<String> uploadFiles(@RequestParam("files") List<MultipartFile> files, @RequestParam("seriesId") String seriesId) throws IOException {
-        storageService.storeMultipleFiles(files,seriesId);
-        return ResponseEntity.ok().body("UwU");
+        String pdfName = storageService.storeMultipleFiles(files,seriesId);
+        String pdfUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/pdf/").path(pdfName).toUriString();
+        return ResponseEntity.ok().body(pdfUri);
     }
 }

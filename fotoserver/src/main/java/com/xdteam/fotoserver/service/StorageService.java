@@ -66,35 +66,42 @@ public class StorageService {
     }
 
     public String storeMultipleFiles(List<MultipartFile> files, String seriesId) throws IOException {
+
+        String htmlContent = imgsToHtml(files, seriesId);
+
+        return htmlToPdf(htmlContent, seriesId);
+    }
+
+    private String imgsToHtml(List<MultipartFile> files, String seriesId) throws IOException {
         int i = 1;
         String seriesResourcesPath =  properties.getUploadDir() + "/" + seriesId + "/";
 
         File htmlTemplateFile = new File("src/main/resources/static/template.html");
-        String htmlString = FileUtils.readFileToString(htmlTemplateFile);
+        String htmlContent = FileUtils.readFileToString(htmlTemplateFile);
 
         for (MultipartFile file : files) {
             String filePath = storeOneFile(file, seriesId);
-            htmlString = htmlString.replace("$image" + i, filePath);
+            htmlContent = htmlContent.replace("$image" + i, filePath);
             i++;
         }
-        htmlString = htmlString.replace("$banner", "../../img/banner.png");
+        htmlContent = htmlContent.replace("$banner", "../../img/banner.png");
 
         String outputHtmlPath = seriesResourcesPath + seriesId + ".html";
         File newHtmlFile = new File(outputHtmlPath);
-        FileUtils.writeStringToFile(newHtmlFile, htmlString);
+        FileUtils.writeStringToFile(newHtmlFile, htmlContent);
 
-        /* PDF */
+        return htmlContent;
+    }
 
+    private String htmlToPdf(String htmlContent, String seriesId) throws FileNotFoundException {
+        String seriesResourcesPath =  properties.getUploadDir() + "/" + seriesId + "/";
         String outputPdfPath = seriesResourcesPath + seriesId + ".pdf";
         File newPdfFile = new File(outputPdfPath);
 
         ConverterProperties props = new ConverterProperties();
         props.setBaseUri(seriesResourcesPath);
-        HtmlConverter.convertToPdf(htmlString, new FileOutputStream(newPdfFile), props);
+        HtmlConverter.convertToPdf(htmlContent, new FileOutputStream(newPdfFile), props);
 
-
-        return "xd";
+        return newPdfFile.getName();
     }
-
-
 }
