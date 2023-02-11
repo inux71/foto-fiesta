@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.xdteam.fotofiesta.presentation.SettingsPage
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.xdteam.fotofiesta.presentation.PreviewScreen
@@ -34,7 +35,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        requestCameraPermission()
+        //requestCameraPermission()
 
         setContent {
             FotoFiestaTheme {
@@ -43,7 +44,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    PreviewScreen()
+                    SettingsPage()
                 }
             }
         }
@@ -65,18 +66,5 @@ class MainActivity : ComponentActivity() {
 
             else -> requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    FotoFiestaTheme {
-        Greeting("Android")
     }
 }
