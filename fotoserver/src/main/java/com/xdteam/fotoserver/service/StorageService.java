@@ -1,17 +1,21 @@
 package com.xdteam.fotoserver.service;
 
+
 import com.xdteam.fotoserver.exception.StorageException;
 import com.xdteam.fotoserver.properties.StorageProperties;
+import org.apache.commons.io.FileUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 @Service
 public class StorageService {
@@ -40,7 +44,7 @@ public class StorageService {
         }
     }
 
-    public String storeFile(MultipartFile file, String seriesId) {
+    public String storeOneFile(MultipartFile file, String seriesId) {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 
         updateStoragePath(seriesId);
@@ -58,4 +62,27 @@ public class StorageService {
         }
 
     }
+
+    public String storeMultipleFiles(List<MultipartFile> files, String seriesId) throws IOException {
+        int i = 1;
+
+        File htmlTemplateFile = new File("src/main/resources/static/template.html");
+        String htmlString = FileUtils.readFileToString(htmlTemplateFile);
+
+        for (MultipartFile file : files) {
+            String filename = storeOneFile(file, seriesId);
+            htmlString = htmlString.replace("$image" + i, filename);
+            i++;
+        }
+        htmlString = htmlString.replace("$banner", "../banner.png");
+
+        String outputHtmlPath = properties.getUploadDir() + "/" + seriesId + "/" + seriesId + ".html";
+        File newHtmlFile = new File(outputHtmlPath);
+        FileUtils.writeStringToFile(newHtmlFile, htmlString);
+
+
+        return "xd";
+    }
+
+
 }

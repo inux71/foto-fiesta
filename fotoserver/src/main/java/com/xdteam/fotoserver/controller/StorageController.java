@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 public class StorageController {
@@ -20,7 +20,7 @@ public class StorageController {
 
     @PostMapping("/oneFile")
     public ResponseEntity<String> uploadOneFile(@RequestParam("file") MultipartFile file, @RequestParam("seriesId") String seriesId) {
-        String fileName = storageService.storeFile(file, seriesId);
+        String fileName = storageService.storeOneFile(file, seriesId);
 
         String fileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/file/").path(fileName).toUriString();
 
@@ -28,8 +28,8 @@ public class StorageController {
     }
 
     @PostMapping("/files")
-    public ResponseEntity<String> uploadFiles(@RequestParam("files") List<MultipartFile> files, @RequestParam("seriesId") String seriesId){
-        List<ResponseEntity<String>> uris = files.stream().map(file->uploadOneFile(file, seriesId)).toList();
-        return ResponseEntity.ok().body(uris.toString());
+    public ResponseEntity<String> uploadFiles(@RequestParam("files") List<MultipartFile> files, @RequestParam("seriesId") String seriesId) throws IOException {
+        storageService.storeMultipleFiles(files,seriesId);
+        return ResponseEntity.ok().body("UwU");
     }
 }
