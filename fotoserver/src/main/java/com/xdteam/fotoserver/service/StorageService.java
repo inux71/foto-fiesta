@@ -77,7 +77,7 @@ public class StorageService {
             htmlString = htmlString.replace("$image" + i, filePath);
             i++;
         }
-        htmlString = htmlString.replace("$banner", "../banner.png");
+        htmlString = htmlString.replace("$banner", "../../img/banner.png");
 
         String outputHtmlPath = seriesResourcesPath + seriesId + ".html";
         File newHtmlFile = new File(outputHtmlPath);
