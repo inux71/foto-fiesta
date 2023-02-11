@@ -5,7 +5,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xdteam.fotofiesta.R
@@ -22,13 +21,14 @@ fun SettingsPage() {
             fontSize = 22.sp,
             modifier = Modifier.padding(10.dp)
         )
+
         SettingsOption(
-            header = stringResource(R.string.delay_option_header),
-            placeholder = "1"
+            optionsList = (1..10).toList(),
+            label = stringResource(R.string.delay_option_header)
         )
         SettingsOption(
-            header = stringResource(R.string.serie_photo_size),
-            placeholder = "5"
+            optionsList = (2..5).toList(),
+            label = stringResource(R.string.serie_photo_size)
         )
     }
 }
