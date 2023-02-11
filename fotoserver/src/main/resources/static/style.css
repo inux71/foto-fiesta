@@ -1,0 +1,31 @@
+img{
+    width: 200px;
+    height: 200px;
+    margin: 10px;
+}
+
+.photo{
+    border:2px black solid;
+    border-radius: 10px;
+}
+
+#photos{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.photo-series{
+    display: flex;
+    flex-direction: column;
+    background-color: aquamarine;
+    border:4px black solid;
+    border-radius: 5px;
+    margin: 10px;
+    padding:10px;
+    width:220px;
+    float: left;
+
+}
