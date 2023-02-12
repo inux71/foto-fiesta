@@ -120,7 +120,8 @@ public class StorageService {
 
     public Resource loadFileAsResource(String fileName) {
         try {
-            Path filePath = this.fileStoragePath.resolve(fileName).normalize();
+            String seriesId = getSeriesIdFromFileName(fileName);
+            Path filePath =  Paths.get(properties.getUploadDir() + "/" + seriesId + "/" + fileName).toAbsolutePath().normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if(resource.exists()) {
                 return resource;
@@ -130,5 +131,10 @@ public class StorageService {
         } catch (MalformedURLException ex) {
             throw new MyFileNotFoundException("File not found " + fileName, ex);
         }
+    }
+
+    public String getSeriesIdFromFileName(String fileName){
+        String[] results =  fileName.split("\\.");
+        return results[0];
     }
 }
