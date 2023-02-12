@@ -1,11 +1,11 @@
 img{
     width: 200px;
     height: 200px;
-    margin: 10px;
+    margin: 5px;
 }
 
 .photo{
-    border:2px black solid;
+    border:4px black solid;
     border-radius: 10px;
 }
 
@@ -14,18 +14,26 @@ img{
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    text-align: center;
+    margin-left:80px;
 
 }
 
 .photo-series{
-    display: flex;
-    flex-direction: column;
-    background-color: aquamarine;
+    background-color: #A286BF;
     border:4px black solid;
     border-radius: 5px;
     margin: 10px;
     padding:10px;
-    width:220px;
-    float: left;
+}
 
+.ps-flex{
+    display: flex;
+    flex-direction: column;
+    float: left;
+    width:220px;
+}
+
+.ps{
+    width:440px;
 }
