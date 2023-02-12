@@ -6,4 +6,7 @@
     <string name="serie_photo_size">Ilość zdjęć</string>
     <string name="settings_page_header">Ustawienia</string>
     <string name="save_button">Zapisz</string>
+
+    <!-- PDF Screen -->
+    <string name="pdf_screen_header">Wybierz PDF</string>
 </resources>
