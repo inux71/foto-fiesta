@@ -2,6 +2,7 @@ package com.xdteam.fotofiesta.di
 
 import android.app.Application
 import androidx.room.Room
+import com.xdteam.fotofiesta.api.ApiUtilities
 import com.xdteam.fotofiesta.data.repository.SerieRepositoryImpl
 import com.xdteam.fotofiesta.data.source.AppDatabase
 import com.xdteam.fotofiesta.domain.repository.SerieRepository
@@ -9,6 +10,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -24,4 +26,10 @@ object AppModule {
     @Singleton
     fun provideSerieRepository(database: AppDatabase): SerieRepository =
         SerieRepositoryImpl(database.serieDao)
+
+    @Provides
+    @Singleton
+    fun provideAPIUtilities(): Retrofit = Retrofit.Builder()
+        .baseUrl(ApiUtilities.BASE_URL)
+        .build()
 }
