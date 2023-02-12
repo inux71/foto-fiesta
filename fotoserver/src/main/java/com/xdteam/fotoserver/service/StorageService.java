@@ -77,12 +77,20 @@ public class StorageService {
     }
 
     private String imgsToHtml(List<MultipartFile> files, String seriesId) throws IOException {
-        int i = 1;
-        String seriesResourcesPath =  properties.getUploadDir() + "/" + seriesId + "/";
 
-        File htmlTemplateFile = new File("src/main/resources/static/template.html");
+        String seriesResourcesPath =  properties.getUploadDir() + "/" + seriesId + "/";
+        File htmlTemplateFile;
+
+        if(files.size() >= 1 && files.size() <= 3 ){
+            htmlTemplateFile = new File("src/main/resources/static/template_2-3.html");
+        }
+        else{
+            htmlTemplateFile = new File("src/main/resources/static/template_4-5.html");
+        }
+
         String htmlContent = FileUtils.readFileToString(htmlTemplateFile);
 
+        int i = 1;
         for (MultipartFile file : files) {
             String filePath = storeOneFile(file, seriesId);
             htmlContent = htmlContent.replace("$image" + i, filePath);
