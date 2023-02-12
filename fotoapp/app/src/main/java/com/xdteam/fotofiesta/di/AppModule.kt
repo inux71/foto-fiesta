@@ -3,8 +3,11 @@ package com.xdteam.fotofiesta.di
 import android.app.Application
 import androidx.room.Room
 import com.xdteam.fotofiesta.api.ApiUtilities
+import com.xdteam.fotofiesta.api.IApi
+import com.xdteam.fotofiesta.data.repository.PDFRepositoryImpl
 import com.xdteam.fotofiesta.data.repository.SerieRepositoryImpl
 import com.xdteam.fotofiesta.data.source.AppDatabase
+import com.xdteam.fotofiesta.domain.repository.PDFRepository
 import com.xdteam.fotofiesta.domain.repository.SerieRepository
 import dagger.Module
 import dagger.Provides
@@ -29,7 +32,15 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun providePDFRepository(api: IApi): PDFRepository = PDFRepositoryImpl(api)
+
+    @Provides
+    @Singleton
     fun provideAPIUtilities(): Retrofit = Retrofit.Builder()
         .baseUrl(ApiUtilities.BASE_URL)
         .build()
+
+    @Provides
+    @Singleton
+    fun provideAPI(retrofit: Retrofit): IApi = retrofit.create(IApi::class.java)
 }

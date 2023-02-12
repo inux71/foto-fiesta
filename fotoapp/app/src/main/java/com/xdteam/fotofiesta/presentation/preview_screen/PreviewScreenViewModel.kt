@@ -24,7 +24,7 @@ data class PreviewScreenViewState(
 
 @HiltViewModel
 class PreviewScreenViewModel @Inject constructor() : ViewModel() {
-    val _state = mutableStateOf(PreviewScreenViewState())
+    private val _state = mutableStateOf(PreviewScreenViewState())
     val state: State<PreviewScreenViewState> = _state
 
     private var timer: CountDownTimer? = null

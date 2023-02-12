@@ -6,17 +6,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.xdteam.fotofiesta.R
+import com.xdteam.fotofiesta.domain.model.Serie
 import com.xdteam.fotofiesta.domain.model.SerieWithImages
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PDFScreen(viewModel: PDFScreenViewModel = hiltViewModel()) {
-    val series: List<SerieWithImages> = emptyList()
+    val series: List<SerieWithImages> = viewModel.state.value.series
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -33,9 +37,18 @@ fun PDFScreen(viewModel: PDFScreenViewModel = hiltViewModel()) {
                 .padding(it)
                 .padding(10.dp)
         ) {
-            items(series) { serie ->
-                PDFItem(serie.serie)
+            item {
+                PDFItem(Serie(1)) {
+                    viewModel.downloadPDF("/pdf/1")
+                }
             }
+//            items(series) { serie ->
+//                PDFItem(serie.serie) {
+//                    coroutineScope.launch {
+//                        viewModel.downloadPDF("/pdf/${serie.serie.id}")
+//                    }
+//                }
+//            }
         }
     }
 }

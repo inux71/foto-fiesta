@@ -6,6 +6,6 @@ import retrofit2.Response
 import java.io.File
 
 interface PDFRepository {
-    suspend fun downloadFile(filename: String): Response<ResponseBody>
+    suspend fun downloadFile(filename: String)
     fun uploadFiles(files: List<File>, serieId: String): Call<String>
 }
