@@ -14,11 +14,12 @@ import java.io.File
 class PDFRepositoryImpl(private val _api: IApi) : PDFRepository {
     override suspend fun downloadFile(filename: String) {
         val response = _api.downloadFile(filename)
+        Log.i("RESPONSE", response.toString())
         Log.i("SCIEZKA", Environment.getDownloadCacheDirectory().toString())
 
         if (response.isSuccessful) {
             val pdf = File(
-                Environment.getDownloadCacheDirectory(),
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                 filename
             )
             pdf.writeBytes(response.body()!!.bytes())

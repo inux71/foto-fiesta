@@ -39,7 +39,7 @@ fun PDFScreen(viewModel: PDFScreenViewModel = hiltViewModel()) {
         ) {
             item {
                 PDFItem(Serie(1)) {
-                    viewModel.downloadPDF("/pdf/1")
+                    viewModel.downloadPDF("1.pdf")
                 }
             }
 //            items(series) { serie ->
