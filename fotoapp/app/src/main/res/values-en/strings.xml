@@ -5,4 +5,5 @@
     <string name="serie_photo_size">Number of photos</string>
     <string name="settings_page_header">Settings</string>
     <string name="save_button">Save</string>
+    <string name="pdf_screen_header">Choose PDF</string>
 </resources>
