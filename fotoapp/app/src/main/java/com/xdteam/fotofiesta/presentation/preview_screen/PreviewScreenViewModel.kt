@@ -29,11 +29,23 @@ class PreviewScreenViewModel @Inject constructor() : ViewModel() {
 
     private var timer: CountDownTimer? = null
 
+    private var _onSinglePhotoDone: (() -> Unit)? = null
+    private var _onSerieFinished: (() -> Unit)? = null
+    private var _onDelayReached: (() -> Unit)? = null
+
     fun setCameraSelector(cameraSelector: CameraSelector) {
         _state.value = _state.value.copy(cameraSelector = cameraSelector)
     }
 
-    fun startSeries() {
+    fun startSeries(
+        onSinglePhotoDone: () -> Unit,
+        onSerieFinished: () -> Unit,
+        onDelayReached: () -> Unit
+    ) {
+        _onSinglePhotoDone = onSinglePhotoDone
+        _onSerieFinished = onSerieFinished
+        _onDelayReached = onDelayReached
+
         _state.value = _state.value.copy(timerState = TIMER_STATE.STARTED, countDownTime = 10, picturesTaken = 0)
 
         restartTimer()
@@ -45,8 +57,10 @@ class PreviewScreenViewModel @Inject constructor() : ViewModel() {
         if (_state.value.picturesTaken == 5) {
             _state.value = _state.value.copy(timerState = TIMER_STATE.IDLE, picturesTaken = 0)
             timer?.cancel()
+            _onSerieFinished?.let { it() }
         } else {
             restartTimer()
+            _onSinglePhotoDone?.let { it() }
         }
     }
 

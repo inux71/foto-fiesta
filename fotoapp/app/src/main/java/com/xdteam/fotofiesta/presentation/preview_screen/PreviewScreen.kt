@@ -1,6 +1,7 @@
 package com.xdteam.fotofiesta.presentation.preview_screen
 
 import android.content.Context
+import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.CameraSelector
@@ -55,6 +56,22 @@ fun PreviewScreen(
     val imageCapture = ImageCapture.Builder().build()
     val previewView: PreviewView = remember { PreviewView(context) }
 
+    val singlePhotoDonePlayer = remember {
+        MediaPlayer.create(context, R.raw.single).also {
+            it.isLooping = false
+        }
+    }
+    val serieFinishedPlayer = remember {
+        MediaPlayer.create(context, R.raw.full).also {
+            it.isLooping = false
+        }
+    }
+    val delayReachedPlayer = remember {
+        MediaPlayer.create(context, R.raw.delay).also {
+            it.isLooping = false
+        }
+    }
+
     LaunchedEffect(lensFacing, state.cameraSelector) {
         val cameraProvider = context.getCameraProvider()
 
@@ -96,7 +113,8 @@ fun PreviewScreen(
 
         if (state.timerState == TIMER_STATE.STARTED) {
             IconButton(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .padding(16.dp)
                     .size(64.dp)
                     .background(
                         color = Color.Red,
@@ -121,7 +139,18 @@ fun PreviewScreen(
                     .clip(CircleShape)
                     .clickable {
                         if (state.timerState == TIMER_STATE.IDLE) {
-                            viewModel.startSeries()
+                            viewModel.startSeries(
+                                onSinglePhotoDone = {
+                                    singlePhotoDonePlayer.also {
+                                        it.start()
+                                    }
+                                },
+                                onSerieFinished = {
+                                    serieFinishedPlayer.also {
+                                        it.start()
+                                    }
+                                }
+                            )
                         }
                     },
                 painter = painterResource(id = R.drawable.session_start),
