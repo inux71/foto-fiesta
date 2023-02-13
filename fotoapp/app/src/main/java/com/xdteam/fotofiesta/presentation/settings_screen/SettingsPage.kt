@@ -41,7 +41,8 @@ fun SettingsPage(
             Modifier
                 .fillMaxSize()
                 .padding(it)
-                .padding(10.dp)
+                .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             SettingsOption(
                 optionsList = (1..10).toList(),
