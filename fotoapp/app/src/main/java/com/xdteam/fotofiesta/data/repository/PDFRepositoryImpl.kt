@@ -5,14 +5,11 @@ import android.util.Log
 import com.xdteam.fotofiesta.api.IApi
 import com.xdteam.fotofiesta.api.body.UploadFilesBody
 import com.xdteam.fotofiesta.domain.repository.PDFRepository
-import kotlinx.coroutines.flow.flow
-import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.Response
 import java.io.File
 
 class PDFRepositoryImpl(private val _api: IApi) : PDFRepository {
-    override suspend fun downloadFile(filename: String) {
+    override suspend fun downloadFile(filename: String): String? {
         val response = _api.downloadFile(filename)
         Log.i("RESPONSE", response.toString())
         Log.i("SCIEZKA", Environment.getDownloadCacheDirectory().toString())
@@ -23,7 +20,11 @@ class PDFRepositoryImpl(private val _api: IApi) : PDFRepository {
                 filename
             )
             pdf.writeBytes(response.body()!!.bytes())
+
+            return pdf.parent
         }
+
+        return null
     }
 
     override fun uploadFiles(files: List<File>, serieId: String): Call<String> =
