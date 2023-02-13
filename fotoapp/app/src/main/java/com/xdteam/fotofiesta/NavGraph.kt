@@ -11,7 +11,7 @@ import com.xdteam.fotofiesta.presentation.settings_screen.SettingsPage
 
 @Composable
 fun NavGraph(navHostController: NavHostController, snackbarHostState: SnackbarHostState) {
-    NavHost(navController = navHostController, startDestination = Screen.PDFScreen.route) {
+    NavHost(navController = navHostController, startDestination = Screen.PreviewScreen.route) {
         composable(Screen.PreviewScreen.route) {
             PreviewScreen(
                 onSettingsClick = {
@@ -21,7 +21,11 @@ fun NavGraph(navHostController: NavHostController, snackbarHostState: SnackbarHo
         }
 
         composable(Screen.SettingsScreen.route) {
-            SettingsPage()
+            SettingsPage(
+                onBackClick = {
+                    navHostController.popBackStack()
+                }
+            )
         }
 
         composable(Screen.PDFScreen.route) {
