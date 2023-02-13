@@ -53,9 +53,7 @@ class PreviewScreenViewModel @Inject constructor() : ViewModel() {
     private fun restartTimer() {
         _state.value = _state.value.copy(countDownTime = 10)
 
-        if (timer != null) {
-            timer?.cancel()
-        }
+        timer?.cancel()
 
         timer = object : CountDownTimer(10000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
@@ -66,5 +64,11 @@ class PreviewScreenViewModel @Inject constructor() : ViewModel() {
                 takePicture()
             }
         }.start()
+    }
+
+    fun stopSeries() {
+        timer?.cancel()
+
+        _state.value = _state.value.copy(timerState = TIMER_STATE.IDLE)
     }
 }

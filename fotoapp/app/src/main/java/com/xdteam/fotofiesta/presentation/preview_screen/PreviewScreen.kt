@@ -42,7 +42,8 @@ import kotlin.coroutines.suspendCoroutine
 @Composable
 fun PreviewScreen(
     viewModel: PreviewScreenViewModel = hiltViewModel(),
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onPDFClick: () -> Unit
 ) {
     val state by viewModel.state
 
@@ -93,61 +94,101 @@ fun PreviewScreen(
             }
         }
 
-        Image(
-            modifier = Modifier
-                .padding(16.dp)
-                .size(64.dp)
-                .aspectRatio(1f)
-                .clip(CircleShape)
-                .clickable {
-                    viewModel.startSeries()
-                },
-            painter = painterResource(id = R.drawable.session_start),
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-            contentDescription = "Rozpocznij sesję"
-        )
-
-        IconButton(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(24.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
-                ),
-            onClick = onSettingsClick
-        ) {
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Ustawienia",
-                tint = Color.White
-            )
-        }
-
-        IconButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
-                ),
-            onClick = {
-                Log.i("[FF]", "Zmieniam kamerę")
-                viewModel.setCameraSelector(
-                    if (state.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
-                        CameraSelector.DEFAULT_FRONT_CAMERA
-                    } else {
-                        CameraSelector.DEFAULT_BACK_CAMERA
-                    }
+        if (state.timerState == TIMER_STATE.STARTED) {
+            IconButton(
+                modifier = Modifier.padding(16.dp)
+                    .size(64.dp)
+                    .background(
+                        color = Color.Red,
+                        shape = CircleShape
+                    ),
+                onClick = {
+                    viewModel.stopSeries()
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_close_24),
+                    contentDescription = "Anuluj",
+                    tint = Color.White
                 )
             }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_camera_flip),
-                contentDescription = "Zmień kamerę",
-                tint = Color.White
+        } else {
+            Image(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(64.dp)
+                    .aspectRatio(1f)
+                    .clip(CircleShape)
+                    .clickable {
+                        if (state.timerState == TIMER_STATE.IDLE) {
+                            viewModel.startSeries()
+                        }
+                    },
+                painter = painterResource(id = R.drawable.session_start),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                contentDescription = "Rozpocznij sesję"
             )
+
+            IconButton(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(24.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape
+                    ),
+                onClick = onSettingsClick,
+                enabled = state.timerState == TIMER_STATE.IDLE
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Ustawienia",
+                    tint = Color.White
+                )
+            }
+
+            Column(modifier = Modifier.align(Alignment.BottomEnd)) {
+                IconButton(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = CircleShape
+                        ),
+                    onClick = onPDFClick
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_insert_drive_file_24),
+                        contentDescription = "Wyświetl listę PDF",
+                        tint = Color.White
+                    )
+                }
+
+                IconButton(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = CircleShape
+                        ),
+                    onClick = {
+                        Log.i("[FF]", "Zmieniam kamerę")
+                        viewModel.setCameraSelector(
+                            if (state.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                                CameraSelector.DEFAULT_FRONT_CAMERA
+                            } else {
+                                CameraSelector.DEFAULT_BACK_CAMERA
+                            }
+                        )
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_camera_flip),
+                        contentDescription = "Zmień kamerę",
+                        tint = Color.White
+                    )
+                }
+            }
         }
     }
 }
