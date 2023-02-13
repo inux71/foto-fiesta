@@ -18,13 +18,9 @@ import androidx.compose.ui.unit.toSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsOption(optionsList: List<*>, label: String) {
+fun <TItem> SettingsOption(optionsList: List<TItem>, selectedItem: TItem,  label: String, onChange: (item: TItem) -> Unit) {
     var expanded by remember {
         mutableStateOf(false)
-    }
-
-    var selectedItem by remember {
-        mutableStateOf(optionsList[0])
     }
 
     var textFilledSize by remember {
@@ -40,9 +36,7 @@ fun SettingsOption(optionsList: List<*>, label: String) {
     Column {
         OutlinedTextField(
             value = selectedItem.toString(),
-            onValueChange = {
-                selectedItem = it
-            },
+            onValueChange = { },
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned {
@@ -60,7 +54,7 @@ fun SettingsOption(optionsList: List<*>, label: String) {
                     }
                 )
             },
-            readOnly = true
+            readOnly = true,
         )
 
         DropdownMenu(
@@ -78,7 +72,7 @@ fun SettingsOption(optionsList: List<*>, label: String) {
                         Text(text = option.toString())
                     },
                     onClick = {
-                        selectedItem = option
+                        onChange(option)
                         expanded = false
                     }
                 )
