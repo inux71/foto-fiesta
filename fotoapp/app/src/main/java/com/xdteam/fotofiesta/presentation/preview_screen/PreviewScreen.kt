@@ -1,6 +1,7 @@
 package com.xdteam.fotofiesta.presentation.preview_screen
 
 import android.content.Context
+import android.media.MediaActionSound
 import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
@@ -147,6 +148,11 @@ fun PreviewScreen(
                                 },
                                 onSerieFinished = {
                                     serieFinishedPlayer.also {
+                                        it.start()
+                                    }
+                                },
+                                onDelayReached = {
+                                    delayReachedPlayer.also {
                                         it.start()
                                     }
                                 }
