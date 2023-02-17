@@ -24,7 +24,11 @@ fun NavGraph(navHostController: NavHostController, snackbarHostState: SnackbarHo
         }
 
         composable(Screen.SettingsScreen.route) {
-            SettingsPage()
+            SettingsPage(
+                onBackClick = {
+                    navHostController.popBackStack()
+                }
+            )
         }
 
         composable(Screen.PDFScreen.route) {
