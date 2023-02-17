@@ -99,6 +99,8 @@ fun PreviewScreen(
                     takePhoto(imageCapture, context.mainExecutor, context.contentResolver) {uri ->
                         uri.path?.let { pic -> viewModel.addPicture(pic) }
                     }
+
+                    singlePhotoDonePlayer.start()
                 }
             }
         }
