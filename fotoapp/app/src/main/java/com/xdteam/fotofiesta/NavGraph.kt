@@ -17,6 +17,9 @@ fun NavGraph(navHostController: NavHostController, snackbarHostState: SnackbarHo
                 onSettingsClick = {
                     navHostController.navigate(Screen.SettingsScreen.route)
                 },
+                onPDFClick = {
+                    navHostController.navigate(Screen.PDFScreen.route)
+                }
             )
         }
 

@@ -3,6 +3,8 @@ package com.xdteam.fotofiesta.presentation.preview_screen
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
+import android.media.MediaActionSound
+import android.media.MediaPlayer
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
@@ -45,7 +47,8 @@ import kotlin.coroutines.suspendCoroutine
 @Composable
 fun PreviewScreen(
     viewModel: PreviewScreenViewModel = hiltViewModel(),
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onPDFClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -55,6 +58,22 @@ fun PreviewScreen(
     val preview = Preview.Builder().build()
     val imageCapture = ImageCapture.Builder().build()
     val previewView: PreviewView = remember { PreviewView(context) }
+
+    val singlePhotoDonePlayer = remember {
+        MediaPlayer.create(context, R.raw.single).also {
+            it.isLooping = false
+        }
+    }
+    val serieFinishedPlayer = remember {
+        MediaPlayer.create(context, R.raw.full).also {
+            it.isLooping = false
+        }
+    }
+    val delayReachedPlayer = remember {
+        MediaPlayer.create(context, R.raw.delay).also {
+            it.isLooping = false
+        }
+    }
 
     LaunchedEffect(state.lensFacing) {
         val cameraProvider = context.getCameraProvider()
@@ -80,6 +99,8 @@ fun PreviewScreen(
                     takePhoto(imageCapture, context.mainExecutor, context.contentResolver) {uri ->
                         uri.path?.let { pic -> viewModel.addPicture(pic) }
                     }
+
+                    singlePhotoDonePlayer.start()
                 }
             }
         }
@@ -110,54 +131,95 @@ fun PreviewScreen(
             }
         }
 
-        Image(
-            modifier = Modifier
-                .padding(16.dp)
-                .size(64.dp)
-                .aspectRatio(1f)
-                .clip(CircleShape)
-                .clickable {
-                    viewModel.startTimer()
-                },
-            painter = painterResource(id = R.drawable.session_start),
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-            contentDescription = "Rozpocznij sesję"
-        )
-
-        IconButton(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(24.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
-                ),
-            onClick = onSettingsClick
-        ) {
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Ustawienia",
-                tint = Color.White
-            )
-        }
-
-        IconButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
-                ),
-            onClick = {
-                viewModel.flipCamera()
+        if (state.timerState == TimerState.STARTED) {
+            IconButton(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(64.dp)
+                    .background(
+                        color = Color.Red,
+                        shape = CircleShape
+                    ),
+                onClick = {
+                    //viewModel.stopSeries()
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_close_24),
+                    contentDescription = "Anuluj",
+                    tint = Color.White
+                )
             }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_camera_flip),
-                contentDescription = "Zmień kamerę",
-                tint = Color.White
+        } else {
+            Image(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(64.dp)
+                    .aspectRatio(1f)
+                    .clip(CircleShape)
+                    .clickable {
+                        if (state.timerState == TimerState.IDLE) {
+                            viewModel.startTimer()
+                        }
+                    },
+                painter = painterResource(id = R.drawable.session_start),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                contentDescription = "Rozpocznij sesję"
             )
+
+            IconButton(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(24.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape
+                    ),
+                onClick = onSettingsClick,
+                enabled = state.timerState == TimerState.IDLE
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Ustawienia",
+                    tint = Color.White
+                )
+            }
+
+            Column(modifier = Modifier.align(Alignment.BottomEnd)) {
+                IconButton(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = CircleShape
+                        ),
+                    onClick = onPDFClick
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_insert_drive_file_24),
+                        contentDescription = "Wyświetl listę PDF",
+                        tint = Color.White
+                    )
+                }
+
+                IconButton(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = CircleShape
+                        ),
+                    onClick = {
+                        viewModel.flipCamera()
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_camera_flip),
+                        contentDescription = "Zmień kamerę",
+                        tint = Color.White
+                    )
+                }
+            }
         }
     }
 }
