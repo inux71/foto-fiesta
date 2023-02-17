@@ -1,7 +1,10 @@
 package com.xdteam.fotofiesta.presentation.preview_screen
 
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -44,9 +47,8 @@ fun PreviewScreen(
     viewModel: PreviewScreenViewModel = hiltViewModel(),
     onSettingsClick: () -> Unit
 ) {
-    val state by viewModel.state
+    val state by viewModel.state.collectAsState()
 
-    val lensFacing = CameraSelector.LENS_FACING_BACK
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -54,13 +56,15 @@ fun PreviewScreen(
     val imageCapture = ImageCapture.Builder().build()
     val previewView: PreviewView = remember { PreviewView(context) }
 
-    LaunchedEffect(lensFacing, state.cameraSelector) {
+    LaunchedEffect(state.lensFacing) {
         val cameraProvider = context.getCameraProvider()
+
+        val cameraSelector = CameraSelector.Builder().requireLensFacing(state.lensFacing).build()
 
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(
             lifecycleOwner,
-            state.cameraSelector,
+            cameraSelector,
             preview,
             imageCapture
         )
@@ -68,23 +72,36 @@ fun PreviewScreen(
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
+    LaunchedEffect(true) {
+        viewModel.countdownFlow.collect {
+            when (it) {
+                PreviewScreenEvent.SeriesStarted -> {}
+                PreviewScreenEvent.SeriesFinished -> {
+                    takePhoto(imageCapture, context.mainExecutor, context.contentResolver) {uri ->
+                        uri.path?.let { pic -> viewModel.addPicture(pic) }
+                    }
+                }
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
 
-        if (state.timerState == TIMER_STATE.STARTED) {
+        if (state.timerState == TimerState.STARTED) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    state.countDownTime.toString(),
+                    String.format("%.1f", state.timerValue),
                     style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Black)
                 )
 
                 Text(
-                    "${state.picturesTaken}/5",
+                    "${state.picturesTaken}/${state.numberOfPhotos}",
                     style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Black),
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -100,7 +117,7 @@ fun PreviewScreen(
                 .aspectRatio(1f)
                 .clip(CircleShape)
                 .clickable {
-                    viewModel.startSeries()
+                    viewModel.startTimer()
                 },
             painter = painterResource(id = R.drawable.session_start),
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
@@ -133,14 +150,7 @@ fun PreviewScreen(
                     shape = CircleShape
                 ),
             onClick = {
-                Log.i("[FF]", "Zmieniam kamerę")
-                viewModel.setCameraSelector(
-                    if (state.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
-                        CameraSelector.DEFAULT_FRONT_CAMERA
-                    } else {
-                        CameraSelector.DEFAULT_BACK_CAMERA
-                    }
-                )
+                viewModel.flipCamera()
             }
         ) {
             Icon(
@@ -161,31 +171,48 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
         }
     }
 
-private fun takePhoto(
-    filenameFormat: String,
+private fun Context.getOutputDirectory(): File {
+    val mediaDir = externalMediaDirs.firstOrNull()?.let {
+        File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
+    }
+    return if (mediaDir != null && mediaDir.exists())
+        mediaDir else filesDir
+}
+
+private suspend fun takePhoto(
     imageCapture: ImageCapture,
-    outputDirectory: File,
     executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
-    onError: (ImageCaptureException) -> Unit
-) {
+    contentResolver: ContentResolver,
+    onImageCaptured: (Uri) -> Unit = {}
+)  {
+    val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
+        .format(System.currentTimeMillis())
 
-    val photoFile = File(
-        outputDirectory,
-        SimpleDateFormat(filenameFormat, Locale.GERMAN).format(System.currentTimeMillis()) + ".jpg"
+    val contentValues = ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, "$name.jpg")
+        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+        put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/FotoFiesta")
+    }
+
+    val outputOptions = ImageCapture.OutputFileOptions
+        .Builder(
+            contentResolver,
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            contentValues
+        )
+        .build()
+
+    imageCapture.takePicture(
+        outputOptions,
+        executor,
+        object : ImageCapture.OnImageSavedCallback {
+            override fun onError(exception: ImageCaptureException) {
+                Log.e("[FF]", "Take photo error:", exception)
+            }
+
+            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                onImageCaptured(outputFileResults.savedUri ?: Uri.EMPTY)
+            }
+        }
     )
-
-    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-    imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
-        override fun onError(exception: ImageCaptureException) {
-            Log.e("kilo", "Take photo error:", exception)
-            onError(exception)
-        }
-
-        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-            val savedUri = Uri.fromFile(photoFile)
-            onImageCaptured(savedUri)
-        }
-    })
 }

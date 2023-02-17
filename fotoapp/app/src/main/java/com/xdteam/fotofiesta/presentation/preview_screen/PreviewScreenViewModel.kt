@@ -3,68 +3,150 @@ package com.xdteam.fotofiesta.presentation.preview_screen
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.camera.core.CameraSelector
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.xdteam.fotofiesta.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import java.util.Timer
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.math.round
 
-enum class TIMER_STATE {
+enum class TimerState {
     IDLE,
     STARTED,
 }
 
-data class PreviewScreenViewState(
-    val cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA,
-    val timerState: TIMER_STATE = TIMER_STATE.IDLE,
-    val countDownTime: Long = 0,
-    val picturesTaken: Int = 0,
-)
-
 @HiltViewModel
-class PreviewScreenViewModel @Inject constructor() : ViewModel() {
-    private val _state = mutableStateOf(PreviewScreenViewState())
-    val state: State<PreviewScreenViewState> = _state
+class PreviewScreenViewModel @Inject constructor(
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
+    private val _state = MutableStateFlow(PreviewScreenState())
+    val state: StateFlow<PreviewScreenState>
+        get() = _state
 
+    private val _countdownFlow = MutableSharedFlow<PreviewScreenEvent>()
+    val countdownFlow = _countdownFlow.asSharedFlow()
+
+    private var countdownJob: Job? = null
     private var timer: CountDownTimer? = null
 
-    fun setCameraSelector(cameraSelector: CameraSelector) {
-        _state.value = _state.value.copy(cameraSelector = cameraSelector)
-    }
+    init {
+        viewModelScope.launch {
+            val (delay, numberOfPhotos) = syncSettings()
 
-    fun startSeries() {
-        _state.value = _state.value.copy(timerState = TIMER_STATE.STARTED, countDownTime = 10, picturesTaken = 0)
-
-        restartTimer()
-    }
-
-    fun takePicture() {
-        _state.value = _state.value.copy(picturesTaken = _state.value.picturesTaken + 1)
-
-        if (_state.value.picturesTaken == 5) {
-            _state.value = _state.value.copy(timerState = TIMER_STATE.IDLE, picturesTaken = 0)
-            timer?.cancel()
-        } else {
-            restartTimer()
+            _state.value = _state.value.copy(photoDelay = delay, numberOfPhotos = numberOfPhotos)
         }
     }
 
-    private fun restartTimer() {
-        _state.value = _state.value.copy(countDownTime = 10)
+    fun startTimer() {
+        _state.value = _state.value.copy(timerState = TimerState.STARTED)
+        countdownJob?.cancel()
 
-        if (timer != null) {
-            timer?.cancel()
+        countdownJob = viewModelScope.launch {
+            val (delay, numberOfPhotos) = syncSettings()
+            _state.value = _state.value.copy(photoDelay = delay, numberOfPhotos = numberOfPhotos, picturesTaken = 0)
+
+            _countdownFlow.emit(PreviewScreenEvent.SeriesStarted)
+
+            countdownTimer(delay.toLong(), TimeUnit.SECONDS, numberOfPhotos, 100).collect {
+                when(it) {
+                    is TimerEvent.OnTick -> {
+                        _state.value = _state.value.copy(timerValue = (it.remaining / 1000.0))
+                    }
+                    // NOTE: Series is actually one photo XDD
+                    TimerEvent.SeriesFinished -> {
+                        _countdownFlow.emit(PreviewScreenEvent.SeriesFinished)
+                        _state.value = _state.value.copy(picturesTaken = _state.value.picturesTaken + 1)
+                    }
+                    TimerEvent.OnFinished -> {
+                        Log.i("[ff]", "Finished!")
+                        _state.value = _state.value.copy(timerState = TimerState.IDLE)
+                    }
+                }
+            }
         }
+    }
 
-        timer = object : CountDownTimer(10000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                _state.value = _state.value.copy(countDownTime = round(millisUntilFinished / 1000f).toLong())
+    fun flipCamera() {
+        _state.value = _state.value.copy(
+            lensFacing = if (_state.value.lensFacing == CameraSelector.LENS_FACING_BACK) {
+                CameraSelector.LENS_FACING_FRONT
+            } else {
+                CameraSelector.LENS_FACING_BACK
             }
+        )
+    }
 
-            override fun onFinish() {
-                takePicture()
-            }
-        }.start()
+    fun addPicture(path: String) {
+        val newPictures = _state.value.currentPictures.toMutableList()
+        newPictures.add(path)
+        _state.value = _state.value.copy(currentPictures = newPictures)
+
+        Log.i("[ff]", "Added picture: $path")
+    }
+
+    private suspend fun syncSettings(): Settings {
+        val delay = settingsRepository.getDelay().getOrNull() ?: 1
+        val numberOfPhotos = settingsRepository.getNumberOfPhotos().getOrNull() ?: 2
+
+        return Settings(delay, numberOfPhotos)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        timer?.cancel()
     }
 }
+
+data class PreviewScreenState(
+    val photoDelay: Int = 0,
+    val numberOfPhotos: Int = 0,
+    val timerState: TimerState = TimerState.IDLE,
+    val timerValue: Double = 0.0,
+    val picturesTaken: Int = 0,
+    val currentPictures: MutableList<String> = mutableListOf(),
+    val lensFacing: Int = CameraSelector.LENS_FACING_BACK
+)
+
+private fun countdownTimer(duration: Long, timeUnit: TimeUnit, restartCount: Int, delayMillis: Long = 1000L) = flow {
+    var timeRemaining = timeUnit.toMillis(duration)
+    var restartsRemaining = restartCount
+    while (restartsRemaining > 0) {
+        emit(TimerEvent.OnTick(timeRemaining))
+        delay(delayMillis)
+        timeRemaining -= delayMillis
+        if (timeRemaining <= 0) {
+            emit(TimerEvent.SeriesFinished)
+
+            // Photo grace period
+            delay(500)
+
+            restartsRemaining--
+            if (restartsRemaining > 0) {
+                timeRemaining = timeUnit.toMillis(duration)
+            } else {
+                emit(TimerEvent.OnFinished)
+            }
+        }
+    }
+}
+
+sealed class PreviewScreenEvent {
+    object SeriesStarted : PreviewScreenEvent()
+    object SeriesFinished : PreviewScreenEvent()
+}
+
+sealed class TimerEvent {
+    class OnTick(val remaining: Long) : TimerEvent()
+    object SeriesFinished : TimerEvent()
+    object OnFinished : TimerEvent()
+}
+
+data class Settings(
+    val photoDelay: Int,
+    val numberOfPhotos: Int
+)
