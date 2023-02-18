@@ -7,5 +7,5 @@ import kotlinx.coroutines.flow.Flow
 interface SerieRepository {
     fun getSeries(): Flow<List<SerieWithImages>>
     suspend fun getSerieById(id: Long): SerieWithImages
-    suspend fun insertSerie(serie: Serie)
+    suspend fun insertSerie(serie: Serie): Long
 }

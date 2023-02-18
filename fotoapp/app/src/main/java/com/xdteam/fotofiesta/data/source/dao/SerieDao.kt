@@ -16,5 +16,5 @@ interface SerieDao {
     suspend fun getSerieById(id: Long): SerieWithImages
 
     @Insert
-    suspend fun insertSerie(serie: Serie)
+    suspend fun insertSerie(serie: Serie): Long
 }

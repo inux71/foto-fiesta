@@ -1,17 +1,23 @@
 package com.xdteam.fotofiesta.presentation.preview_screen
 
+import android.net.Uri
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.camera.core.CameraSelector
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.xdteam.fotofiesta.domain.model.Image
+import com.xdteam.fotofiesta.domain.model.Serie
+import com.xdteam.fotofiesta.domain.model.SerieWithImages
+import com.xdteam.fotofiesta.domain.repository.ImageRepository
+import com.xdteam.fotofiesta.domain.repository.SerieRepository
 import com.xdteam.fotofiesta.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.Timer
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -22,7 +28,9 @@ enum class TimerState {
 
 @HiltViewModel
 class PreviewScreenViewModel @Inject constructor(
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val _serieRepository: SerieRepository,
+    private val _imageRepository: ImageRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(PreviewScreenState())
     val state: StateFlow<PreviewScreenState>
@@ -65,6 +73,16 @@ class PreviewScreenViewModel @Inject constructor(
                     TimerEvent.OnFinished -> {
                         Log.i("[ff]", "Finished!")
                         _state.value = _state.value.copy(timerState = TimerState.IDLE)
+
+                        val serie = Serie(null)
+                        val serieId = _serieRepository.insertSerie(serie)
+
+                        _state.value.currentPictures.forEach { imagePath ->
+                            _imageRepository.insert(Image(null, serieId, imagePath))
+                        }
+
+                        val serieWithImages = _serieRepository.getSerieById(serieId)
+                        Log.i("SerieWithImages", serieWithImages.toString())
                     }
                 }
             }

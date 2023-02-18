@@ -4,9 +4,11 @@ import android.app.Application
 import androidx.room.Room
 import com.xdteam.fotofiesta.api.ApiUtilities
 import com.xdteam.fotofiesta.api.IApi
+import com.xdteam.fotofiesta.data.repository.ImageRepositoryImpl
 import com.xdteam.fotofiesta.data.repository.PDFRepositoryImpl
 import com.xdteam.fotofiesta.data.repository.SerieRepositoryImpl
 import com.xdteam.fotofiesta.data.source.AppDatabase
+import com.xdteam.fotofiesta.domain.repository.ImageRepository
 import com.xdteam.fotofiesta.domain.repository.PDFRepository
 import com.xdteam.fotofiesta.domain.repository.SerieRepository
 import dagger.Module
@@ -29,6 +31,11 @@ object AppModule {
     @Singleton
     fun provideSerieRepository(database: AppDatabase): SerieRepository =
         SerieRepositoryImpl(database.serieDao)
+
+    @Provides
+    @Singleton
+    fun provideImageRepository(database: AppDatabase): ImageRepository =
+        ImageRepositoryImpl(database.imageDao)
 
     @Provides
     @Singleton
