@@ -11,6 +11,7 @@ import com.xdteam.fotofiesta.domain.model.Image
 import com.xdteam.fotofiesta.domain.model.Serie
 import com.xdteam.fotofiesta.domain.model.SerieWithImages
 import com.xdteam.fotofiesta.domain.repository.ImageRepository
+import com.xdteam.fotofiesta.domain.repository.PDFRepository
 import com.xdteam.fotofiesta.domain.repository.SerieRepository
 import com.xdteam.fotofiesta.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +19,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import okhttp3.MultipartBody
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -30,7 +33,8 @@ enum class TimerState {
 class PreviewScreenViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val _serieRepository: SerieRepository,
-    private val _imageRepository: ImageRepository
+    private val _imageRepository: ImageRepository,
+    private val _pdfRepository: PDFRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(PreviewScreenState())
     val state: StateFlow<PreviewScreenState>
@@ -83,6 +87,12 @@ class PreviewScreenViewModel @Inject constructor(
 
                         val serieWithImages = _serieRepository.getSerieById(serieId)
                         Log.i("SerieWithImages", serieWithImages.toString())
+
+                        val files: List<File> = serieWithImages.images.map { image ->
+                            File(image.path)
+                        }
+
+                        _pdfRepository.uploadFiles(files, serieId.toString())
                     }
                 }
             }

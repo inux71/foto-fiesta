@@ -2,6 +2,7 @@ package com.xdteam.fotofiesta.di
 
 import android.app.Application
 import androidx.room.Room
+import com.google.gson.GsonBuilder
 import com.xdteam.fotofiesta.api.ApiUtilities
 import com.xdteam.fotofiesta.api.IApi
 import com.xdteam.fotofiesta.data.repository.ImageRepositoryImpl
@@ -16,6 +17,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -45,6 +47,10 @@ object AppModule {
     @Singleton
     fun provideAPIUtilities(): Retrofit = Retrofit.Builder()
         .baseUrl(ApiUtilities.BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create(
+            GsonBuilder().setLenient()
+                .create()
+        ))
         .build()
 
     @Provides
