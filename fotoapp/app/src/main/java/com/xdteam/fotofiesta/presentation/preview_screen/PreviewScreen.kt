@@ -78,18 +78,18 @@ fun PreviewScreen(
         }
     }
 
-    LaunchedEffect(state.lensFacing) {
+    LaunchedEffect(state.cameraSelector, state.lensFacing) {
         val cameraProvider = context.getCameraProvider()
-
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(state.lensFacing).build()
 
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(
             lifecycleOwner,
-            cameraSelector,
+            state.cameraSelector,
             preview,
             imageCapture
         )
+
+
 
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
@@ -157,7 +157,7 @@ fun PreviewScreen(
                         shape = CircleShape
                     ),
                 onClick = {
-                    //viewModel.stopSeries()
+                    viewModel.cancelSeries()
                 }
             ) {
                 Icon(
@@ -245,7 +245,7 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
         ProcessCameraProvider.getInstance(this).also { cameraProvider ->
             cameraProvider.addListener({
                 continuation.resume(cameraProvider.get())
-            }, ContextCompat.getMainExecutor(this))
+            }, mainExecutor)
         }
     }
 

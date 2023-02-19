@@ -2,6 +2,7 @@ package com.xdteam.fotofiesta.presentation.pdf_screen
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -12,13 +13,16 @@ import com.xdteam.fotofiesta.domain.model.SerieWithImages
 import com.xdteam.fotofiesta.domain.repository.PDFRepository
 import com.xdteam.fotofiesta.domain.repository.SerieRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
 data class PDFScreenState(
-    var series: List<SerieWithImages> = emptyList()
+    val series: List<SerieWithImages> = emptyList()
 )
 
 @HiltViewModel
@@ -26,19 +30,20 @@ class PDFScreenViewModel @Inject constructor(
     private val _pdfRepository: PDFRepository,
     private val _serieRepository: SerieRepository
 ) : ViewModel() {
-    private var _state = mutableStateOf(PDFScreenState())
-    val state: State<PDFScreenState> = _state
+    private val _state = MutableStateFlow(PDFScreenState())
+    val state: StateFlow<PDFScreenState>
+        get() = _state
 
     init {
         getSeries()
     }
 
-    fun getSeries() {
-        viewModelScope.launch {
-             _serieRepository.getSeries().onEach {
-                 _state.value = state.value.copy(series = it)
-             }
-        }
+    private fun getSeries() {
+             _serieRepository.getSeries().onEach { series ->
+                _state.value = _state.value.copy(series = series)
+            }.launchIn(viewModelScope)
+
+        Log.i("PDFScreenViewModel", "getSeries: ${_state.value.series}")
     }
 
     fun downloadPDF(filename: String, context: Context) = viewModelScope.launch {

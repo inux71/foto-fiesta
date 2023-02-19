@@ -99,13 +99,20 @@ class PreviewScreenViewModel @Inject constructor(
         }
     }
 
+    fun cancelSeries() {
+        _state.value = _state.value.copy(timerState = TimerState.IDLE)
+        countdownJob?.cancel()
+    }
+
     fun flipCamera() {
+        val lensFacing = if (_state.value.lensFacing == CameraSelector.LENS_FACING_BACK) {
+            CameraSelector.LENS_FACING_FRONT
+        } else {
+            CameraSelector.LENS_FACING_BACK
+        }
         _state.value = _state.value.copy(
-            lensFacing = if (_state.value.lensFacing == CameraSelector.LENS_FACING_BACK) {
-                CameraSelector.LENS_FACING_FRONT
-            } else {
-                CameraSelector.LENS_FACING_BACK
-            }
+            lensFacing = lensFacing,
+            cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
         )
     }
 
@@ -137,7 +144,8 @@ data class PreviewScreenState(
     val timerValue: Double = 0.0,
     val picturesTaken: Int = 0,
     val currentPictures: MutableList<String> = mutableListOf(),
-    val lensFacing: Int = CameraSelector.LENS_FACING_BACK
+    val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+    val cameraSelector: CameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
 )
 
 private fun countdownTimer(duration: Long, timeUnit: TimeUnit, restartCount: Int, delayMillis: Long = 1000L) = flow {
