@@ -36,16 +36,11 @@ fun PDFScreen(viewModel: PDFScreenViewModel = hiltViewModel()) {
                 .padding(it)
                 .padding(10.dp)
         ) {
-            item {
-                PDFItem(Serie(null)) {
-                    viewModel.downloadPDF("1.pdf", context)
+            items(series) { serie ->
+                PDFItem(serie.serie) {
+                    viewModel.downloadPDF("${serie.serie.id}.pdf", context)
                 }
             }
-//            items(series) { serie ->
-//                PDFItem(serie.serie) {
-//                    viewModel.downloadPDF("${serie.serie.id}.pdf", context)
-//                }
-//            }
         }
     }
 }
