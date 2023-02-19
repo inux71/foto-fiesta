@@ -4,6 +4,9 @@ import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
+import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.media.MediaPlayer
 import android.net.Uri
 import android.provider.MediaStore
