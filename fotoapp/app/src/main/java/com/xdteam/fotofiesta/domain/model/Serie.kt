@@ -5,5 +5,5 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "serie")
 data class Serie(
-    @PrimaryKey(autoGenerate = true) val id: Long
+    @PrimaryKey(autoGenerate = true) val id: Long? = 0
 )

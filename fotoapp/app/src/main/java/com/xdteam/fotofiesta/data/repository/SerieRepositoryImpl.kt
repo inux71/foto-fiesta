@@ -11,5 +11,5 @@ class SerieRepositoryImpl(
 ) : SerieRepository {
     override fun getSeries(): Flow<List<SerieWithImages>> = _dao.getSeries()
     override suspend fun getSerieById(id: Long): SerieWithImages = _dao.getSerieById(id)
-    override suspend fun insertSerie(serie: Serie) = _dao.insertSerie(serie)
+    override suspend fun insertSerie(serie: Serie): Long = _dao.insertSerie(serie)
 }

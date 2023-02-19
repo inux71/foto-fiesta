@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.xdteam.fotofiesta.R
+import com.xdteam.fotofiesta.domain.model.Serie
 import com.xdteam.fotofiesta.domain.model.SerieWithImages
 
 @OptIn(ExperimentalMaterial3Api::class)

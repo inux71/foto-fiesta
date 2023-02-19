@@ -7,7 +7,7 @@ data class SerieWithImages(
     @Embedded val serie: Serie,
     @Relation(
         parentColumn = "id",
-        entityColumn = "id"
+        entityColumn = "serieId"
     )
     val images: List<Image>
 )

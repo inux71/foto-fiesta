@@ -3,7 +3,7 @@ package com.xdteam.fotofiesta.presentation.preview_screen
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
-import android.media.MediaActionSound
+import android.database.Cursor
 import android.media.MediaPlayer
 import android.net.Uri
 import android.provider.MediaStore
@@ -21,7 +21,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.xdteam.fotofiesta.R
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -96,8 +99,21 @@ fun PreviewScreen(
             when (it) {
                 PreviewScreenEvent.SeriesStarted -> {}
                 PreviewScreenEvent.SeriesFinished -> {
-                    takePhoto(imageCapture, context.mainExecutor, context.contentResolver) {uri ->
-                        uri.path?.let { pic -> viewModel.addPicture(pic) }
+                    takePhoto(imageCapture, context.mainExecutor, context.contentResolver) { uri ->
+                        uri.path?.let { pic ->
+                            var cursor: Cursor? = null
+
+                            try {
+                                val proj = arrayOf(MediaStore.Images.Media.DATA)
+                                cursor = context.contentResolver.query(uri, proj, null, null, null)!!
+                                val index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                                cursor.moveToFirst()
+
+                                viewModel.addPicture(cursor.getString(index))
+                            } finally {
+                                cursor?.close()
+                            }
+                        }
                     }
 
                     singlePhotoDonePlayer.start()
