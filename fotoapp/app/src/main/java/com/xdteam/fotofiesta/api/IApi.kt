@@ -16,5 +16,5 @@ interface IApi {
 
     @Multipart
     @POST("/files")
-    fun uploadFiles(@Part files: List<MultipartBody.Part>, @Part serieId: MultipartBody.Part): Call<ResponseBody>
+    suspend fun uploadFiles(@Part files: List<MultipartBody.Part>, @Part serieId: MultipartBody.Part): Response<ResponseBody>
 }

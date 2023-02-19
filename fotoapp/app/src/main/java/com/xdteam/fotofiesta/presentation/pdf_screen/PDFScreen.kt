@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.xdteam.fotofiesta.R
+import com.xdteam.fotofiesta.domain.model.Serie
 import com.xdteam.fotofiesta.domain.model.SerieWithImages
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,11 +36,16 @@ fun PDFScreen(viewModel: PDFScreenViewModel = hiltViewModel()) {
                 .padding(it)
                 .padding(10.dp)
         ) {
-            items(series) { serie ->
-                PDFItem(serie.serie) {
-                    viewModel.downloadPDF("${serie.serie.id}.pdf", context)
+            item {
+                PDFItem(Serie(null)) {
+                    viewModel.downloadPDF("1.pdf", context)
                 }
             }
+//            items(series) { serie ->
+//                PDFItem(serie.serie) {
+//                    viewModel.downloadPDF("${serie.serie.id}.pdf", context)
+//                }
+//            }
         }
     }
 }

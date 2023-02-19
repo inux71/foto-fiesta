@@ -8,6 +8,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
+import retrofit2.Response
 import java.io.File
 
 class PDFRepositoryImpl(private val _api: IApi) : PDFRepository {
@@ -29,7 +30,7 @@ class PDFRepositoryImpl(private val _api: IApi) : PDFRepository {
         return null
     }
 
-    override fun uploadFiles(files: List<File>, serieId: String): Call<ResponseBody> {
+    override suspend fun uploadFiles(files: List<File>, serieId: String): Response<ResponseBody> {
         return _api.uploadFiles(
             files.map { file ->
                 MultipartBody.Part.createFormData(
