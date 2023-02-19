@@ -1,11 +1,16 @@
 package com.xdteam.fotofiesta.presentation.preview_screen
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.xdteam.fotofiesta.domain.model.Image
 import com.xdteam.fotofiesta.domain.model.Serie
@@ -21,6 +26,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -93,10 +99,18 @@ class PreviewScreenViewModel @Inject constructor(
                         }
 
                         _pdfRepository.uploadFiles(files, serieId.toString())
+
+                        _state.value = _state.value.copy(currentPictures = mutableListOf())
                     }
                 }
             }
         }
+    }
+
+    fun rotateImage(img: Bitmap, degree: Int): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(degree.toFloat())
+        return Bitmap.createBitmap(img, 0, 0, img.width, img.height, matrix, true)
     }
 
     fun cancelSeries() {
