@@ -81,7 +81,7 @@ class PreviewScreenViewModel @Inject constructor(
                         _state.value = _state.value.copy(picturesTaken = _state.value.picturesTaken + 1)
                     }
                     TimerEvent.OnFinished -> {
-                        Log.i("[ff]", "Finished!")
+                        _countdownFlow.emit(PreviewScreenEvent.OnFinished)
                         _state.value = _state.value.copy(timerState = TimerState.IDLE)
 
                         val serie = Serie(null)
@@ -113,13 +113,18 @@ class PreviewScreenViewModel @Inject constructor(
         return Bitmap.createBitmap(img, 0, 0, img.width, img.height, matrix, true)
     }
 
+    fun cancelSeries() {
+        _state.value = _state.value.copy(timerState = TimerState.IDLE)
+        countdownJob?.cancel()
+    }
+
     fun flipCamera() {
         _state.value = _state.value.copy(
             lensFacing = if (_state.value.lensFacing == CameraSelector.LENS_FACING_BACK) {
                 CameraSelector.LENS_FACING_FRONT
             } else {
                 CameraSelector.LENS_FACING_BACK
-            }
+            },
         )
     }
 
@@ -151,7 +156,7 @@ data class PreviewScreenState(
     val timerValue: Double = 0.0,
     val picturesTaken: Int = 0,
     val currentPictures: MutableList<String> = mutableListOf(),
-    val lensFacing: Int = CameraSelector.LENS_FACING_BACK
+    val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
 )
 
 private fun countdownTimer(duration: Long, timeUnit: TimeUnit, restartCount: Int, delayMillis: Long = 1000L) = flow {
@@ -180,6 +185,7 @@ private fun countdownTimer(duration: Long, timeUnit: TimeUnit, restartCount: Int
 sealed class PreviewScreenEvent {
     object SeriesStarted : PreviewScreenEvent()
     object SeriesFinished : PreviewScreenEvent()
+    object OnFinished : PreviewScreenEvent()
 }
 
 sealed class TimerEvent {

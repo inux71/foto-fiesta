@@ -47,6 +47,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -60,9 +61,14 @@ fun PreviewScreen(
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val executor = remember {
+        Executors.newSingleThreadExecutor()
+    }
+
+    val cameraSelector = CameraSelector.Builder().requireLensFacing(state.lensFacing).build()
 
     val preview = Preview.Builder().build()
-    val imageCapture = ImageCapture.Builder().build()
+    var imageCapture = ImageCapture.Builder().build()
     val previewView: PreviewView = remember { PreviewView(context) }
 
     val singlePhotoDonePlayer = remember {
@@ -84,7 +90,6 @@ fun PreviewScreen(
     LaunchedEffect(state.lensFacing) {
         val cameraProvider = context.getCameraProvider()
 
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(state.lensFacing).build()
 
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(
@@ -97,12 +102,12 @@ fun PreviewScreen(
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
-    LaunchedEffect(true) {
+    LaunchedEffect(state.lensFacing) {
         viewModel.countdownFlow.collect {
             when (it) {
                 PreviewScreenEvent.SeriesStarted -> {}
                 PreviewScreenEvent.SeriesFinished -> {
-                    takePhoto(imageCapture, context.mainExecutor, context.contentResolver) { uri ->
+                    takePhoto(imageCapture, executor, context.contentResolver) { uri ->
                         uri.path?.let { pic ->
                             var cursor: Cursor? = null
 
@@ -120,6 +125,9 @@ fun PreviewScreen(
                     }
 
                     singlePhotoDonePlayer.start()
+                }
+                PreviewScreenEvent.OnFinished -> {
+                    serieFinishedPlayer.start()
                 }
             }
         }
@@ -160,7 +168,7 @@ fun PreviewScreen(
                         shape = CircleShape
                     ),
                 onClick = {
-                    //viewModel.stopSeries()
+                    viewModel.cancelSeries()
                 }
             ) {
                 Icon(
