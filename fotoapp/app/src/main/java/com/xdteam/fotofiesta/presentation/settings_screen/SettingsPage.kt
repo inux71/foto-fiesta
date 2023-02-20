@@ -1,6 +1,5 @@
 package com.xdteam.fotofiesta.presentation.settings_screen
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -10,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.xdteam.fotofiesta.R
 import com.xdteam.fotofiesta.presentation.SettingsOption
@@ -32,7 +30,10 @@ fun SettingsPage(
                     }
                 },
                 title = {
-                    Text(stringResource(R.string.settings_page_header), style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+                    Text(
+                        stringResource(R.string.settings_page_header),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
                 }
             )
         }

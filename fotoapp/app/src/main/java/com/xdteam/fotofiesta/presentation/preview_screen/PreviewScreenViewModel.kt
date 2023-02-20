@@ -1,20 +1,12 @@
 package com.xdteam.fotofiesta.presentation.preview_screen
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.media.ExifInterface
-import android.net.Uri
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.camera.core.CameraSelector
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.xdteam.fotofiesta.domain.model.Image
 import com.xdteam.fotofiesta.domain.model.Serie
-import com.xdteam.fotofiesta.domain.model.SerieWithImages
 import com.xdteam.fotofiesta.domain.repository.ImageRepository
 import com.xdteam.fotofiesta.domain.repository.PDFRepository
 import com.xdteam.fotofiesta.domain.repository.SerieRepository
@@ -24,9 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import okhttp3.MultipartBody
 import java.io.File
-import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -66,7 +56,11 @@ class PreviewScreenViewModel @Inject constructor(
 
         countdownJob = viewModelScope.launch {
             val (delay, numberOfPhotos) = syncSettings()
-            _state.value = _state.value.copy(photoDelay = delay, numberOfPhotos = numberOfPhotos, picturesTaken = 0)
+            _state.value = _state.value.copy(
+                photoDelay = delay,
+                numberOfPhotos = numberOfPhotos,
+                picturesTaken = 0
+            )
 
             _countdownFlow.emit(PreviewScreenEvent.SeriesStarted)
 
@@ -78,9 +72,11 @@ class PreviewScreenViewModel @Inject constructor(
                     // NOTE: Series is actually one photo XDD
                     TimerEvent.SeriesFinished -> {
                         _countdownFlow.emit(PreviewScreenEvent.SeriesFinished)
-                        _state.value = _state.value.copy(picturesTaken = _state.value.picturesTaken + 1)
+                        _state.value =
+                            _state.value.copy(picturesTaken = _state.value.picturesTaken + 1)
                     }
                     TimerEvent.OnFinished -> {
+                        delay(750)
                         _countdownFlow.emit(PreviewScreenEvent.OnFinished)
                         _state.value = _state.value.copy(timerState = TimerState.IDLE)
 
@@ -107,14 +103,9 @@ class PreviewScreenViewModel @Inject constructor(
         }
     }
 
-    fun rotateImage(img: Bitmap, degree: Int): Bitmap {
-        val matrix = Matrix()
-        matrix.postRotate(degree.toFloat())
-        return Bitmap.createBitmap(img, 0, 0, img.width, img.height, matrix, true)
-    }
-
     fun cancelSeries() {
-        _state.value = _state.value.copy(timerState = TimerState.IDLE)
+        _state.value =
+            _state.value.copy(timerState = TimerState.IDLE, currentPictures = mutableListOf())
         countdownJob?.cancel()
     }
 
@@ -159,7 +150,12 @@ data class PreviewScreenState(
     val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
 )
 
-private fun countdownTimer(duration: Long, timeUnit: TimeUnit, restartCount: Int, delayMillis: Long = 1000L) = flow {
+private fun countdownTimer(
+    duration: Long,
+    timeUnit: TimeUnit,
+    restartCount: Int,
+    delayMillis: Long = 1000L
+) = flow {
     var timeRemaining = timeUnit.toMillis(duration)
     var restartsRemaining = restartCount
     while (restartsRemaining > 0) {

@@ -7,7 +7,6 @@ import com.xdteam.fotofiesta.domain.repository.PDFRepository
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.ResponseBody
-import retrofit2.Call
 import retrofit2.Response
 import java.io.File
 

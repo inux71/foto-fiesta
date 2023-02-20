@@ -2,7 +2,6 @@ package com.xdteam.fotofiesta.api
 
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Multipart
@@ -16,5 +15,8 @@ interface IApi {
 
     @Multipart
     @POST("/files")
-    suspend fun uploadFiles(@Part files: List<MultipartBody.Part>, @Part serieId: MultipartBody.Part): Response<ResponseBody>
+    suspend fun uploadFiles(
+        @Part files: List<MultipartBody.Part>,
+        @Part serieId: MultipartBody.Part
+    ): Response<ResponseBody>
 }
