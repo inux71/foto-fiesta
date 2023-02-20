@@ -1,6 +1,5 @@
 package com.xdteam.fotofiesta.presentation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +17,12 @@ import androidx.compose.ui.unit.toSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <TItem> SettingsOption(optionsList: List<TItem>, selectedItem: TItem,  label: String, onChange: (item: TItem) -> Unit) {
+fun <TItem> SettingsOption(
+    optionsList: List<TItem>,
+    selectedItem: TItem,
+    label: String,
+    onChange: (item: TItem) -> Unit
+) {
     var expanded by remember {
         mutableStateOf(false)
     }

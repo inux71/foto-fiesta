@@ -4,9 +4,6 @@ import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.graphics.Bitmap
-import android.graphics.Matrix
-import android.media.ExifInterface
 import android.media.MediaPlayer
 import android.net.Uri
 import android.provider.MediaStore
@@ -68,7 +65,7 @@ fun PreviewScreen(
     val cameraSelector = CameraSelector.Builder().requireLensFacing(state.lensFacing).build()
 
     val preview = Preview.Builder().build()
-    var imageCapture = ImageCapture.Builder().build()
+    val imageCapture = ImageCapture.Builder().build()
     val previewView: PreviewView = remember { PreviewView(context) }
 
     val singlePhotoDonePlayer = remember {
@@ -113,8 +110,15 @@ fun PreviewScreen(
 
                             try {
                                 val proj = arrayOf(MediaStore.Images.Media.DATA)
-                                cursor = context.contentResolver.query(uri, proj, null, null, null)!!
-                                val index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                                cursor = context.contentResolver.query(
+                                    uri,
+                                    proj,
+                                    null,
+                                    null,
+                                    null
+                                )!!
+                                val index =
+                                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
                                 cursor.moveToFirst()
 
                                 viewModel.addPicture(cursor.getString(index))
@@ -259,14 +263,6 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
             }, ContextCompat.getMainExecutor(this))
         }
     }
-
-private fun Context.getOutputDirectory(): File {
-    val mediaDir = externalMediaDirs.firstOrNull()?.let {
-        File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
-    }
-    return if (mediaDir != null && mediaDir.exists())
-        mediaDir else filesDir
-}
 
 private suspend fun takePhoto(
     imageCapture: ImageCapture,

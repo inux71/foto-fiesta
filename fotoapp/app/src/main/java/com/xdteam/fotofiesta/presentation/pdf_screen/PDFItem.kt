@@ -14,8 +14,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.xdteam.fotofiesta.R
 import com.xdteam.fotofiesta.domain.model.Serie
-import okhttp3.ResponseBody
-import retrofit2.Response
 
 @Composable
 fun PDFItem(serie: Serie, onItemClicked: () -> Unit) {
